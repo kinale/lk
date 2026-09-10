@@ -274,8 +274,13 @@ void dwc8250_init_early(int port, const struct dwc8250_config *config) {
 
     u->config = *config;
 
-    // Ask a DesignWare part what it was built with. CPR only means anything
-    // when the part says it encoded its parameters there.
+    // Ask a DesignWare part what it was built with. Encoding the parameters in
+    // CPR is a synthesis option, so a genuine DesignWare may report nothing at
+    // all -- CPR and UCV both read zero on the EIC7700X. Everything keyed off
+    // CPR below therefore has to stay optional, with an LSR based fallback:
+    // USR bits 1 through 4 and the TFL/RFL levels only exist when the part
+    // claims FIFO_STAT, and reading them from a part that does not would say
+    // the tx fifo is permanently full.
     if (has_ext_regs(u)) {
         uint32_t cpr = read_ext_reg(u, UART_CPR);
         if (cpr & UART_CPR_ENCODED_PARMS) {

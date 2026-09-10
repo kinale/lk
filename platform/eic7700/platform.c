@@ -28,6 +28,9 @@
 static const void *fdt;
 
 void platform_early_init(void) {
+    // bring the console uart up first, so early output has somewhere to go
+    platform_init_uart_early();
+
     TRACE;
     // every hart has both an M and an S mode context, so the targets are flat
     plic_early_init(PLIC_BASE_VIRT, NUM_IRQS, false);
@@ -57,7 +60,7 @@ void platform_early_init(void) {
 
 void platform_init(void) {
     plic_init();
-    uart_init();
+    platform_init_uart();
 }
 
 // OpenSBI's board support forwards both of these to the board management
